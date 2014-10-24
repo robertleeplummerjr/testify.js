@@ -1,0 +1,30 @@
+<div id="wrapper">
+	<div id="content">
+		<h1 v-class="{{result}}">
+			{{title}}
+		</h1>
+		<div class="message {{result}}">
+			<span class="green">Far out! Everything passed!</span>
+			<span class="red">Bummer! You have failing tests! [pass {{percent}}%]</span>
+		</div>
+		<div v-repeat="case : cases">
+			<h2 v-class="case.fail | caseClass'">
+				{{case.name}}
+				<span class="result">
+					<span class="green">{{case.pass}}</span>/<span class="red">{{case.fail}}</span>
+				</span>
+			</h2>
+			<ul class="tests">
+				<li v-repeat="test : case.tests">
+					<span class="type {{test.result}}">
+						{{test | identification}}
+					</span>
+					<span class="line">call {{test.line}}</span>
+					<span class="file">{{test.file}}</span>
+					<div class="source">{{test.source | escapeHtml}}</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+<footer> Powered by <a href="http://robertleeplummerjr.github.io/testify.js" target="_blank">Testify.js</a> framework, based on <a href="http://tutorialzine.com/projects/testify/" target="_blank">Testify</a></footer>
