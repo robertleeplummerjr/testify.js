@@ -6,7 +6,7 @@
     "Robert Plummer <RobertLeePlummerJr@Gmail.com>"
   ],
   "description": "A micro unit testing framework ported from Testify.php",
-  "main": "lib/Testify/Testify.js",
+  "main": "Testify.js",
   "keywords": [
     "unit",
     "test",
