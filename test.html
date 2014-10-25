@@ -1,31 +1,15 @@
 <!DOCTYPE html>
 <html>
-<head id="head">
+<head>
 	<title>({{pass}}|{{fail}}) {{title}} · Testify Suite</title>
 	<meta charset="utf-8" />
-	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-	<meta http-equiv="Pragma" content="no-cache" />
-	<meta http-equiv="Expires" content="0" />
-	<link rel="stylesheet" type="text/css" href="lib/Testify/testify.css">
+	<script src="Testify.js"></script>
 	<script src="bower_components/vue/dist/vue.js"></script>
-	<script src="bower_components/stacktrace/stacktrace.js"></script>
-	<script src="lib/Testify/Testify.js"></script>
-	<script src="lib/Testify/helpers.js"></script>
-	<script src="lib/Testify/testify.report.html.js"></script>
 	<script src="test/testifyTest.js"></script>
-	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans+Narrow" />
-	<!--[if lt IE 9]>
-	<script src="bower_components/html5shiv/dist/html5shiv.js"></script>
-	<![endif]-->
 </head>
-<body>
-
-</body>
+<body></body>
 <script>
-	ajax('lib/Testify/testify.report.html', function(template) {
-		document.body.innerHTML = template;
-
+		document.body.innerHTML = Testify.report.html.ui;
 		Testify.report.html(tf);
-	});
 </script>
 </html>

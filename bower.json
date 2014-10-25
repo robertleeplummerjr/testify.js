@@ -24,8 +24,6 @@
     "tests"
   ],
   "dependencies": {
-    "vue": "~0.10.6",
-    "stacktrace": "~0.6.2",
-    "html5shiv": "~3.7.2"
+    "vue": "~0.10.6"
   }
 }

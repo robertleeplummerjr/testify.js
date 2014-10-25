@@ -25,9 +25,9 @@ var Testify = (function() {
 	 */
 	function recordTest(pass, message)
 	{
-		message = message || '';
+		message = message || 'Testify.recordTest';
 
-		var bt = printStackTrace(),
+		var bt = '',
 			source = '',//this.getFileLine(bt[1]['file'], bt[1]['line'] - 1),
 			result = pass ? "pass" : "fail",
 			item = this.stack[this.currentTestCase];
@@ -185,7 +185,7 @@ var Testify = (function() {
 				n,
 				test;
 
-			if (isCallable(this._before)) {
+			if (this._before !== null && isCallable(this._before)) {
 				this._before.apply(this, arr);
 			}
 
@@ -205,6 +205,8 @@ var Testify = (function() {
 				this._after.apply(this, arr);
 			}
 			this.report();
+
+			Constructor.instances.push(this);
 			return this;
 		},
 		
@@ -219,7 +221,7 @@ var Testify = (function() {
 		 */
 		assert: function assert(arg, message)
 		{
-			message = message || '';
+			message = message || 'Testify.assert';
 			return this.assertTrue(arg, message);
 		},
 		
@@ -414,7 +416,7 @@ var Testify = (function() {
 		 */
 		assertEqual: function assertEqual(arg1, arg2, message)
 		{
-			message = message || '';
+			message = message || 'Testify.assertEqual';
 			return this.assertEquals(arg1, arg2, message);
 		},
 
@@ -436,6 +438,7 @@ var Testify = (function() {
 	};
 
 	Constructor.report = {};
+	Constructor.instances = [];
 
 	return Constructor;
 })();
@@ -451,3 +454,296 @@ var TestifyException = (function() {
 
 	return Constructor;
 })();
+
+/**
+ * @param {Testify} testify
+ */
+Testify.report.html = (function() {
+
+	function Constructor(testify) {
+		new Vue({
+			el: document.getElementsByTagName('title')[0],
+			data: {
+				pass: testify.suiteResults.pass,
+				fail: testify.suiteResults.fail,
+				title: testify.suiteTitle
+			}
+		});
+
+		new Vue({
+			el: document.body,
+			data: {
+				title: testify.suiteTitle,
+
+				result: testify.suiteResults.fail == 0 ? 'pass' : 'fail',
+				cases: testify.stack,
+				percent: percent(testify.suiteResults)
+			},
+			filters: {
+				caseClass: function(fail) {
+					return fail > 0 ? 'fail' : 'pass'
+				},
+				identification: function(test) {
+					return test.name == '' ? test.type + '()' : test.name;
+				},
+				escapeHtml: escapeHtml
+			}
+		});
+	}
+
+	Constructor.ui = '<style>\
+		* {\
+	margin: 0;\
+	padding: 0;\
+}\
+html {\
+	background-color: #fafafa;\
+	overflow-x: hidden;\
+	height: 100%;\
+}\
+body {\
+	font: 13px/1.5 Tahoma, Arial, sans-serif;\
+	text-align: center;\
+	color: #5a5a5a;\
+	height: 100%;\
+}\
+#wrapper {\
+	min-height: 100%;\
+}\
+h1, h2 {\
+	font-family: "PT Sans Narrow", sans-serif;\
+	font-weight: normal;\
+}\
+h1:before,\
+	h2:before {\
+	display: inline-block;\
+	font: normal 0.6em/1.1 sans-serif;\
+	text-align: center;\
+	color: #fff;\
+	content: "✓";\
+	position: relative;\
+	top: -0.2em;\
+	width: 1em;\
+	height: 1em;\
+	padding: 0.32em;\
+	margin-right: 1.2em;\
+	background-color: #a8d474;\
+	border-radius: 50%;\
+}\
+h1.fail:before,\
+	h2.fail:before {\
+	background-color: #ee3c4f;\
+	content: "✗";\
+	line-height: 1.05;\
+}\
+h1 {\
+	font-size: 46px;\
+	padding: 50px 40px;\
+	position: relative;\
+	border-bottom: 1px solid #ddd;\
+	background-color: #fff;\
+	box-shadow: 0 0 3px #ddd;\
+	margin-bottom: 40px;\
+	color: #777;\
+}\
+h2 {\
+	font-size: 28px;\
+}\
+span.result {\
+	color: #DCDCDC;\
+	display: block;\
+	padding: 0.6em;\
+}\
+.green { color: #94c25d; }\
+.red { color: #fb4357; }\
+ul {\
+	list-style: none;\
+	font-size: 19px;\
+	width: 800px;\
+	margin: 10px auto 80px;\
+}\
+li span.pass {color: #94c25d;}\
+li span.fail {color: #fb4357;}\
+li span.file,\
+	li span.line {\
+	float: right;\
+	font-size: 14px;\
+	padding-left: 10px;\
+	line-height: 19px;\
+	position: relative;\
+	bottom: -4px;\
+}\
+li span.file {\
+	color: #b0b0b0;\
+}\
+li{\
+	text-align: left;\
+	border-bottom: 1px dotted #d4d4d4;\
+	padding: 3px 0;\
+	overflow: hidden;\
+}\
+li span.type {\
+	display: inline-block;\
+	width: 600px;\
+}\
+div.message {\
+	font-size: 22px;\
+	font-family: "PT Sans Narrow", sans-serif;\
+	padding: 0 40px 50px;\
+}\
+div.message.pass .red,\
+	div.message.fail .green {\
+	display: none;\
+}\
+footer {\
+	background-color: #fff;\
+	border-top: 1px solid #ddd;\
+	box-shadow: 0 0 3px #ddd;\
+	color: #888;\
+	font-size: 10px;\
+	padding: 15px;\
+	display: block;\
+	height: 15px;\
+	position: relative;\
+}\
+a, a:visited {\
+	color: #3ba2cd;\
+	text-decoration: none;\
+}\
+a:hover {\
+	text-decoration: underline;\
+}\
+div.source {\
+	font-size: 11px;\
+	color: #ccc;\
+	-moz-transition: 0.25s;\
+	-webkit-transition: 0.25s;\
+	transition: 0.25s;\
+}\
+li:hover div.source {\
+	color: #444;\
+}\
+		</style>\
+		<div id="wrapper">\
+			<div id="content">\
+				<h1 v-class="{{result}}">\
+					{{title}}\
+				</h1>\
+				<div class="message {{result}}">\
+					<span class="green">Far out! Everything passed!</span>\
+					<span class="red">Bummer! You have failing tests! [pass {{percent}}%]</span>\
+				</div>\
+				<div v-repeat="case : cases">\
+					<h2 v-class="case.fail | caseClass">\
+						{{case.name}}\
+						<span class="result">\
+							<span class="green">{{case.pass}}</span>/<span class="red">{{case.fail}}</span>\
+						</span>\
+					</h2>\
+					<ul class="tests">\
+						<li v-repeat="test : case.tests">\
+							<span class="type {{test.result}}">\
+								{{test | identification}}\
+							</span>\
+							<span class="line">call {{test.line}}</span>\
+							<span class="file">{{test.file}}</span>\
+							<div class="source">{{test.source | escapeHtml}}</div>\
+						</li>\
+					</ul>\
+				</div>\
+			</div>\
+		</div>\
+		<footer> Powered by <a href="http://robertleeplummerjr.github.io/testify.js" target="_blank">Testify.js</a> framework, based on <a href="http://tutorialzine.com/projects/testify/" target="_blank">Testify</a></footer>';
+
+	return Constructor;
+})();
+
+/**
+ * @param {Testify} testify
+ */
+Testify.report.cli = (function() {
+	return function(testify) {
+		var result = testify.suiteResults.fail === 0 ? 'pass' : 'fail',
+			i,
+			cases = testify.stack,
+			caseTitle,
+			lines = (new Array(80)).join('-'),
+			spaces = (new Array(7)).join(' '),
+			_case,
+			tests,
+			testsMax,
+			test,
+			echo = lines + "\n"
+				+ " " + testify.title + " [" + testify.result + "]\n";
+
+
+		for(caseTitle in cases) if (cases.hasOwnProperty(caseTitle)) {
+			_case = cases[caseTitle];
+			echo +=
+				"\n" + lines + "\n"
+				+ "[" + result + "] " + caseTitle + "{pass " + _case.pass + " / fail " + _case.fail + "}\n\n";
+
+			tests = _case.tests;
+			testsMax = tests.length;
+			i = 0;
+			for(;i < testsMax; i++) {
+				test = tests[i];
+				echo +=
+					"[" + test.result + "] " + test.type + "}()\n"
+					+ spaces + "line " + test.line + ", " + test.file + "\n"
+					+ spaces + test.source + "\n";
+			}
+		}
+	}
+})();
+
+/**
+ * Calculate the percentage of success for a test
+ *
+ * @param {Object} suiteResults
+ * @return {Number} Percent
+ */
+function percent(suiteResults) {
+	var sum = suiteResults.pass + suiteResults.fail,
+		result = Math.round(suiteResults.pass * 100 / Math.max(sum, 1));
+
+	return result;
+}
+
+function escapeHtml(text) {
+	var map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+
+	return (text || '').replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function ajax(url, success, error) {
+	"use strict";
+	var request = new XMLHttpRequest();
+	request.open('GET', url, true);
+
+	request.onload = function() {
+		if (request.status >= 200 && request.status < 400){
+			// Success!
+			if (success)
+				success(request.responseText);
+		} else {
+			// We reached our target server, but it returned an error
+			if (error)
+				error(request.responseText);
+		}
+	};
+
+	request.onerror = function() {
+		// There was a connection error of some sort
+		if (error)
+			error();
+	};
+
+	request.send();
+}

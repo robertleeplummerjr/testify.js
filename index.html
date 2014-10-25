@@ -184,7 +184,7 @@
 	<meta itemprop="description" content="">
 </head>
 
-<body onload="prettyPrint()">
+<body>
 <div>
 <header>
 	<h1>Testify.js - a micro unit testing framework</h1>
@@ -195,17 +195,15 @@
 <aside id="about">
 	<h2>What?</h2>
 	<p>Testify is a micro unit testing framework for javascript. It strives for elegance instead of feature bloat. Testing your code is no longer a chore - it's fun again.</p>
-	<p class="bigBottomMargin">The framework is released under <strong>GPL</strong> and is freely <a href="https://github.com/marco-fiset/Testify.php">available for download</a>.</p>
+	<p class="bigBottomMargin">The framework is released under <strong>MIT</strong> and is freely <a href="https://github.com/robertleeplummerjr/Testify.js">available for download</a>.</p>
 
 	<!-- +1 button -->
 	<g:plusone size="medium" annotation="inline" width="300" ></g:plusone>
 
 	<a href="https://twitter.com/share" class="twitter-share-button" style="margin-top:4px;" data-text="Testify.js - a micro framework that makes testing fun again" data-count="horizontal" data-via="Tutorialzine">Tweet</a>
 
-	<iframe src="//www.facebook.com/plugins/like.php?href&amp;send=false&amp;layout=button_count&amp;width=450&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font=tahoma&amp;height=21&amp;appId=117753764943974" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:450px; height:21px;margin-top:4px;" allowTransparency="true"></iframe>
 
-
-	<a href="http://github.com/marco-fiset/Testify.php" style="background:none;"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub"></a>
+	<a href="https://github.com/robertleeplummerjr/Testify.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
 </aside>
 
 <section id="doc">
@@ -213,9 +211,6 @@
 <p>Here is a quick, comment free example of Testify:</p>
 
 <pre class="prettyprint">
-include 'testify/testify.class.php';
-include 'MyCalc.php';
-
 tf = new Testify('MyCalc Test Suite');
 
 tf.beforeEach(function(tf){
@@ -247,11 +242,8 @@ tf.run();
 
 <p>If you like what you see, keep reeding below.</p>
 <h3>Getting Started</h3>
-<p>Getting started with Testify.js is really easy. Simply download the archive from github.com, extract the testify folder, and include <strong>testify.class.php</strong> along with the classes or functions you want to test in a fresh PHP document. </p>
+<p>Getting started with Testify.js is really easy: <code>bower install testify.js</code></p>
 <pre class="prettyprint">
-include 'testify/testify.class.php';
-include 'MyCalc.php';
-
 // Create a new test suite
 tf = new Testify('MyCalc Test Suite');
 
@@ -273,9 +265,6 @@ tf.test('Testing the Add method', function(tf){
 <p>Noice that the closure takes tf as an argument. It is important to include it, as otherwise the rest of the examples here will not work. There are other ways to make the tf object accessible inside the function, but this is more convenient.</p>
 
 <pre class="prettyprint">
-include 'testify/testify.class.php';
-include 'MyCalc.php';
-
 // Create a new test suite
 tf = new Testify('MyCalc Test Suite');
 
@@ -293,7 +282,7 @@ tf.test('Testing the Add method', function(tf){
 // Run the test and generate a report
 tf.run();
 </pre>
-<p>Congratulations! You wrote your first test. See it in action <a href="examples/doc_example1.php">here</a>.</p>
+<p>Congratulations! You wrote your first test. See it in action <a href="examples/doc_example1.html">here</a>.</p>
 <h3>Method Reference</h3>
 <p>These methods (and properties) help you organize your tests and group them logically into test cases.</p>
 <h4>data</h4>
@@ -346,8 +335,6 @@ tf.beforeEach(function(tf){
 <pre class="prettyprint">
 tf.after(function(tf){
 	// All the tests have completed
-	unlink('tmp.txt');
-	tf.data.DB.close();
 });
 </pre>
 <h4>afterEach( callback )</h4>
@@ -355,8 +342,6 @@ tf.after(function(tf){
 <pre class="prettyprint">
 tf.afterEach(function(tf){
 	// After a test has completed
-	unlink('tmp.txt');
-	tf.data.DB.close();
 });
 </pre>
 
@@ -397,20 +382,20 @@ tf.assertIdentical( 1, '1' ); // fail
 tf.assertIdentical( 1, 2 ); // fail
 </pre>
 
-<h4>assertInArray( needle, Array heystack )</h4>
-<p>This method checks whether variable needle is a member of array heystack. It uses PHP's in_array() function internally.</p>
+<h4>assertInArray( needle, Array haystack )</h4>
+<p>This method checks whether variable needle is a member of array haystack.</p>
 <pre class="prettyprint">
 // Inside a test case
-tf.assertInArray( 1, array(1,2,3,4,5) ); // pass
-tf.assertInArray( 1, array(3,4,6,7) ); // fail
+tf.assertInArray( 1, [1,2,3,4,5] ); // pass
+tf.assertInArray( 1, [3,4,6,7] ); // fail
 </pre>
 
-<h4>assertNotInArray( needle, Array heystack )</h4>
+<h4>assertNotInArray( needle, Array haystack )</h4>
 <p>The opposite of assertInArray()</p>
 <pre class="prettyprint">
 // Inside a test case
-tf.assertNotInArray( 1, array(1,2,3,4,5) ); // fail
-tf.assertNotInArray( 1, array(3,4,6,7) ); // pass
+tf.assertNotInArray( 1, [1,2,3,4,5] ); // fail
+tf.assertNotInArray( 1, [3,4,6,7] ); // pass
 </pre>
 <h4>pass( )</h4>
 <p>Unconditional pass.</p>
@@ -427,18 +412,19 @@ tf.fail(); // fail
 </section>
 <aside id="links">
 	<h2>Links</h2>
-	<p>Examples: <a href="examples/example2.php">Pass</a> <a href="examples/example1.php">Fail</a></p>
-	<p>Download: <a href="https://github.com/marco-fiset/Testify.php/zipball/master">Zip</a> <a href="https://github.com/marco-fiset/Testify.php/tarball/master">Tar.gz</a></p>
-	<!-- <p><a href="https://github.com/marco-fiset/Testify.php">Testify on github</a></p> -->
+	<p>Examples: <a href="examples/example2.html">Pass</a>
+		<a href="examples/example1.html">Fail</a></p>
+		<a href="test.html">Suite</a>
+	<p>Download: <a href="https://github.com/RobertLeePlummerJr/testify.js/zipball/master">Zip</a>
+		<a href="https://github.com/RobertLeePlummerJr/testify.js/tarball/master">Tar.gz</a></p>
 </aside>
 </div>
 
 <footer>
-	Created by <a href="https://github.com/martinaglv/">Martin Angelov</a> | Released under the GPL
+	Created by <a href="https://github.com/martinaglv/">Martin Angelov</a> | Ported by <a href="https://github.com/robertleeplummerjr">Robert Plummer</a> Released under MIT
 </footer>
 </div>
 
-<script type="text/javascript" src="assets/google-code-prettify/prettify.js"></script>
 <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
 
 <!-- Google +1 -->
