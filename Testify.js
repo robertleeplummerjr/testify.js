@@ -82,49 +82,60 @@ var Testify = (function() {
 	};
 	Function.prototype.signature = function()
 	{
-		var signature = {
-			name: this.getName(),
-			params: [],
-			toString: function()
-			{
-				var paramsAsStrings = [],
-					params = this.params,
-					max = params.length,
-					i = 0,
-					param,
-					type;
+		var name = this.getName(),
+			arguments = this.arguments,
+			max = arguments.length,
+			argument,
+			x= 0,
+			signature = ({
+				name: name,
+				params: [],
+				toString: function() {
+					var paramsAsStrings = [],
+						params = this.params,
+						max = params.length,
+						i = 0,
+						param,
+						type;
 
-				for (;i < max;i++) {
-					type = typeof (param = params[i]);
-					switch (type) {
-						case 'undefined':
-							paramsAsStrings.push('undefined');
-						case 'number':
-						case 'boolean':
-						default:
-							paramsAsStrings.push(param.toString());
-							break;
-						case 'string':
-							paramsAsStrings.push('"' + param.toString() + '"');
-							break;
-						case 'object':
-							if (param === null) {
-								paramsAsStrings.push('null');
-							} else {
+					for (;i < max;i++) {
+						type = typeof (param = params[i]);
+						switch (type) {
+							case 'undefined':
+								paramsAsStrings.push('undefined');
+							case 'number':
+							case 'boolean':
+							default:
 								paramsAsStrings.push(param.toString());
-							}
-							break;
+								break;
+							case 'string':
+								paramsAsStrings.push('"' + param.toString() + '"');
+								break;
+							case 'object':
+								if (param === null) {
+									paramsAsStrings.push('null');
+								} else {
+									paramsAsStrings.push(param.toString());
+								}
+								break;
+						}
 					}
-				}
 
-				return this.name + "(" + paramsAsStrings.join(', ') + ")"
+					return this.name + "(" + paramsAsStrings.join(', ') + ")"
+				}
+			});
+
+		if(arguments) {
+			for(;x < max; x++) {
+				argument = arguments[x];
+				signature.params.push(argument);
 			}
-		};
-		if(this.arguments)
-		{
-			for(var x=0; x<this.arguments.length; x++)
-				signature.params.push(this.arguments[x]);
 		}
+
+		if (name === 'anonymous' && !Constructor.includedanonymousTraces) {
+			return '';
+		}
+
 		return signature;
 	};
 	Function.prototype.getName = function()
@@ -524,6 +535,7 @@ var Testify = (function() {
 
 	Constructor.report = {};
 	Constructor.instances = [];
+	Constructor.includedanonymousTraces = false;
 
 	return Constructor;
 })();
