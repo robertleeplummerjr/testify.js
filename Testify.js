@@ -97,6 +97,8 @@ var Testify = (function() {
 				for (;i < max;i++) {
 					type = typeof (param = params[i]);
 					switch (type) {
+						case 'undefined':
+							paramsAsStrings.push('undefined');
 						case 'number':
 						case 'boolean':
 						default:
