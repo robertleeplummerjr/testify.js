@@ -25,12 +25,20 @@ var Testify = (function() {
 	 */
 	function recordTest(pass, message)
 	{
-		message = message || 'Testify.recordTest';
+		message = message || 'recordTest';
 
 		var bt = '',
 			source = '',//this.getFileLine(bt[1]['file'], bt[1]['line'] - 1),
 			result = pass ? "pass" : "fail",
-			item = this.stack[this.currentTestCase];
+			item = this.stack[this.currentTestCase],
+			trace = arguments.callee.trace(),
+			source;
+
+		trace.length -= 2;
+		trace.reverse();
+		source = trace.join('\n');
+
+		//trace.shift();
 
 		if (!item){
 			item = this.stack[this.currentTestCase] = {
@@ -55,6 +63,79 @@ var Testify = (function() {
 		this.suiteResults[result]++;
 		return pass;
 	}
+
+	//http://helephant.com/2007/05/12/diy-javascript-stack-trace/
+	/**
+	 *
+	 * @returns {Array}
+	 */
+	Function.prototype.trace = function()
+	{
+		var trace = [];
+		var current = this;
+		while(current)
+		{
+			trace.push(current.signature());
+			current = current.caller;
+		}
+		return trace;
+	};
+	Function.prototype.signature = function()
+	{
+		var signature = {
+			name: this.getName(),
+			params: [],
+			toString: function()
+			{
+				var paramsAsStrings = [],
+					params = this.params,
+					max = params.length,
+					i = 0,
+					param,
+					type;
+
+				for (;i < max;i++) {
+					type = typeof (param = params[i]);
+					switch (type) {
+						case 'number':
+						case 'boolean':
+						default:
+							paramsAsStrings.push(param.toString());
+							break;
+						case 'string':
+							paramsAsStrings.push('"' + param.toString() + '"');
+							break;
+						case 'object':
+							if (param === null) {
+								paramsAsStrings.push('null');
+							} else {
+								paramsAsStrings.push(param.toString());
+							}
+							break;
+					}
+				}
+
+				return this.name + "(" + paramsAsStrings.join(', ') + ")"
+			}
+		};
+		if(this.arguments)
+		{
+			for(var x=0; x<this.arguments.length; x++)
+				signature.params.push(this.arguments[x]);
+		}
+		return signature;
+	};
+	Function.prototype.getName = function()
+	{
+		var caller = (this.prototype.constructor == Testify.prototype[this.name] ? 'Testify.' : '');
+		if(this.name)
+			return caller + this.name;
+		var definition = this.toString().split("\n")[0];
+		var exp = /^function ([^\s(]+).+/;
+		if(exp.test(definition))
+			return definition.split("\n")[0].replace(exp, "$1") || "anonymous";
+		return "anonymous";
+	};
 	/**
 	 * Internal method for fetching a specific line of a text file. With caching.
 	 *
@@ -125,7 +206,8 @@ var Testify = (function() {
 				name: name,
 				testCase: testCase,
 				pass: 0,
-				fail: 0
+				fail: 0,
+				source: testCase.toString()
 			});
 			return this;
 		},
@@ -197,6 +279,7 @@ var Testify = (function() {
 				}
 				// Executing the testcase
 				test.testCase.apply(this, arr);
+				test.source = test.testCase.toString();
 				if (this._afterEach !== null && isCallable(this._afterEach)) {
 					this._afterEach.apply(this, arr);
 				}
@@ -226,7 +309,7 @@ var Testify = (function() {
 		},
 		
 		/**
-		 * Passes if given a truthfull expression.
+		 * Passes if given a truthful expression.
 		 *
 		 * @param {Boolean} arg The result of a boolean expression
 		 * @param {String} [message] Custom message. SHOULD be specified for easier debugging
@@ -332,7 +415,7 @@ var Testify = (function() {
 		 * Passes if arg is not an element of arr.
 		 *
 		 * @param {*} arg
-		 * param {Array} arr
+		 * @param {Array} arr
 		 * @param {String} [message] Custom message. SHOULD be specified for easier debugging
 		 *
 		 * @return boolean
@@ -485,8 +568,7 @@ Testify.report.html = (function() {
 				},
 				identification: function(test) {
 					return test.name == '' ? test.type + '()' : test.name;
-				},
-				escapeHtml: escapeHtml
+				}
 			}
 		});
 	}
@@ -619,6 +701,7 @@ div.source {\
 	-moz-transition: 0.25s;\
 	-webkit-transition: 0.25s;\
 	transition: 0.25s;\
+	white-space:pre;\
 }\
 li:hover div.source {\
 	color: #444;\
@@ -647,7 +730,7 @@ li:hover div.source {\
 							</span>\
 							<span class="line">call {{test.line}}</span>\
 							<span class="file">{{test.file}}</span>\
-							<div class="source">{{test.source | escapeHtml}}</div>\
+							<div class="source">{{test.source}}</div>\
 						</li>\
 					</ul>\
 				</div>\
@@ -708,18 +791,6 @@ function percent(suiteResults) {
 		result = Math.round(suiteResults.pass * 100 / Math.max(sum, 1));
 
 	return result;
-}
-
-function escapeHtml(text) {
-	var map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;'
-	};
-
-	return (text || '').replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
 function ajax(url, success, error) {
