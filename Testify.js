@@ -28,7 +28,7 @@ var Testify = (function() {
 		message = message || 'recordTest';
 
 		var bt = '',
-			source = '',//this.getFileLine(bt[1]['file'], bt[1]['line'] - 1),
+			source = '',
 			result = pass ? "pass" : "fail",
 			item = this.stack[this.currentTestCase],
 			trace = arguments.callee.trace(),
@@ -69,25 +69,30 @@ var Testify = (function() {
 	 *
 	 * @returns {Array}
 	 */
-	Function.prototype.trace = function()
-	{
-		var trace = [];
-		var current = this;
-		while(current)
-		{
-			trace.push(current.signature());
+	Function.prototype.trace = function() {
+		var trace = [],
+			current = this,
+			signature;
+
+		while(current) {
+			signature = current.signature();
+
+			if (signature !== null) {
+				trace.push(signature);
+			}
+
 			current = current.caller;
 		}
 		return trace;
 	};
-	Function.prototype.signature = function()
-	{
+
+	Function.prototype.signature = function() {
 		var name = this.getName(),
 			arguments = this.arguments,
 			max = arguments.length,
 			argument,
 			x= 0,
-			signature = ({
+			signature = {
 				name: name,
 				params: [],
 				toString: function() {
@@ -123,7 +128,7 @@ var Testify = (function() {
 
 					return this.name + "(" + paramsAsStrings.join(', ') + ")"
 				}
-			});
+			};
 
 		if(arguments) {
 			for(;x < max; x++) {
@@ -133,37 +138,29 @@ var Testify = (function() {
 		}
 
 		if (name === 'anonymous' && !Constructor.includedanonymousTraces) {
-			return '';
+			return null;
 		}
 
 		return signature;
 	};
-	Function.prototype.getName = function()
-	{
+
+	Function.prototype.getName = function() {
 		var caller = (this.prototype.constructor == Testify.prototype[this.name] ? 'Testify.' : '');
-		if(this.name)
+
+		if(this.name) {
 			return caller + this.name;
-		var definition = this.toString().split("\n")[0];
-		var exp = /^function ([^\s(]+).+/;
-		if(exp.test(definition))
+		}
+
+		var definition = this.toString().split("\n")[0],
+			exp = /^function ([^\s(]+).+/;
+
+		if(exp.test(definition)) {
 			return definition.split("\n")[0].replace(exp, "$1") || "anonymous";
+		}
+
 		return "anonymous";
 	};
-	/**
-	 * Internal method for fetching a specific line of a text file. With caching.
-	 *
-	 * @param {String} file The file name
-	 * @param {Number} line The line number to return
-	 *
-	 * @return string
-	 */
-	function getFileLine(file, line)
-	{
-		if (!this.fileCache.hasOwnProperty(file)) {
-			this.fileCache[file] = file;
-		}
-		return trim(this.fileCache[file][line]);
-	}
+
 
 	/**
 	 *
